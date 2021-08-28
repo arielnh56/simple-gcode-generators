@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 version = '1.5.0'
 # python face.py
 # Dec 4 2007
