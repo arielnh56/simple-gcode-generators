@@ -48,16 +48,17 @@ version = '1.5.0'
 	NC File directory and can be saved with save preferences.
 	Added safe z hight.
 """
-from Tkinter import *
-from tkFileDialog import *
+from tkinter import *
+from tkinter.filedialog import *
 from math import *
-from SimpleDialog import *
-from ConfigParser import *
+from tkinter.simpledialog import *
+from configparser import *
 from decimal import *
-import tkMessageBox
+import tkinter.messagebox
+
 import os
 
-IN_AXIS = os.environ.has_key("AXIS_PROGRESS_BAR")
+IN_AXIS = 'AXIS_PROGRESS_BAR' in os.environ
 
 class Application(Frame):
     def __init__(self, master=None):
@@ -328,7 +329,7 @@ class Application(Frame):
     def GetIniData(self,FileName,SectionName,OptionName,default=''):
         """
         Returns the data in the file, section, option if it exists
-        of an .ini type file created with ConfigParser.write()
+        of an .ini type file created with configparser.write()
         If the file is not found or a section or an option is not found
         returns an exception
         """
@@ -352,7 +353,7 @@ class Application(Frame):
         Pass the file name, section name, option name and option data
         When complete returns 'sucess'
         """
-        self.cp=ConfigParser()
+        self.cp=configparser()
         try:
             self.fn=open(FileName,'a')
         except IOError:
@@ -400,7 +401,7 @@ class Application(Frame):
             if not self.cp.has_section(SectionName):
                 self.cp.add_section(SectionName)
             self.cp.set(SectionName,OptionName,OptionData)
-        self.cp=ConfigParser()
+        self.cp=configparser()
         self.fn=open('face.ini','w')
         set_pref('Directories','NcFiles',self.NcDir)
         set_pref('MillingPara','Feedrate',self.FeedrateVar.get())
@@ -419,7 +420,7 @@ class Application(Frame):
         self.fn.close()
 	
     def Simple(self):
-        tkMessageBox.showinfo('Feature', 'Sorry this Feature has\nnot been programmed yet.')
+        tkinter.messagebox.showinfo('Feature', 'Sorry this Feature has\nnot been programmed yet.')
 
     def ClearTextBox(self):
         self.g_code.delete(1.0,END)
@@ -432,7 +433,7 @@ class Application(Frame):
         self.CopyClpBd()
 
     def HelpInfo(self):
-        SimpleDialog(self,
+        tkinter.simpledialog(self,
             text='Required fields are:\n'
             'Part Width & Length,\n'
             'Amount to Remove,\n'
@@ -442,7 +443,7 @@ class Application(Frame):
             default=0,
             title='User Info').go()
     def HelpAbout(self):
-        tkMessageBox.showinfo('Help About', 'Programmed by\n'
+        tkinter.messagebox.showinfo('Help About', 'Programmed by\n'
             'Big John T (AKA John Thornton)\n'
             'Rick Calder\n'
             'Brad Hanken\n'
