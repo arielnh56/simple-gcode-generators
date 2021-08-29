@@ -103,14 +103,14 @@ class Application(Frame):
         self.sp1 = Label(self)
         self.sp1.grid(row=0)
         
-        self.st1 = Label(self, text='Part Length X *')
+        self.st1 = Label(self, text='Part Length X * ')
         self.st1.grid(row=1, column=0, sticky=E)
         self.PartLengthVar = StringVar()
         self.PartLength = Entry(self, width=10, textvariable=self.PartLengthVar)
         self.PartLength.grid(row=1, column=1, sticky=W)
         self.PartLength.focus_set()
 
-        self.st2 = Label(self, text='Part Width Y *')
+        self.st2 = Label(self, text='Part Width Y * ')
         self.st2.grid(row=2, column=0, sticky=E)
         self.PartWidthVar = StringVar()
         self.PartWidth = Entry(self, width=10, textvariable=self.PartWidthVar)
@@ -122,7 +122,7 @@ class Application(Frame):
         self.DepthOfCut = Entry(self, width=10, textvariable=self.DepthOfCutVar)
         self.DepthOfCut.grid(row=3, column=1, sticky=W)
 
-        self.st5 = Label(self, text='Amount to Remove *')
+        self.st5 = Label(self, text='Total Z Depth ')
         self.st5.grid(row=4, column=0, sticky=E)
         self.TotalToRemoveVar = StringVar()
         self.TotalToRemove = Entry(self, width=10, textvariable=self.TotalToRemoveVar)
@@ -147,26 +147,23 @@ class Application(Frame):
         self.SpindleRPM = Entry(self, width=10, textvariable=self.SpindleRPMVar)
         self.SpindleRPM.grid(row=3, column=3, sticky=W)
 
-        self.st7 = Label(self, text='Stepover Percent ')
+        self.st7 = Label(self, text='Stepover (Value or %) ')
         self.st7.grid(row=4, column=2, sticky=E)
         self.StepOverVar = StringVar()
         self.StepOver = Entry(self, width=10, textvariable=self.StepOverVar)
         self.StepOver.grid(row=4, column=3, sticky=W)
         
-        self.st10 = Label(self, text='Safe Z hight')
+        self.st10 = Label(self, text='Safe Z height ')
         self.st10.grid(row=5, column=0, sticky=E)
         self.SafeZVar = StringVar()
         self.Leadin = Entry(self, width=10, textvariable=self.SafeZVar)
         self.Leadin.grid(row=5, column=1, sticky=W)
         
-        self.st8 = Label(self, text='Lead In / Lead Out')
+        self.st8 = Label(self, text='Lead In / Lead Out ')
         self.st8.grid(row=5, column=2, sticky=E)
         self.LeadinVar = StringVar()
         self.Leadin = Entry(self, width=10, textvariable=self.LeadinVar)
         self.Leadin.grid(row=5, column=3, sticky=W)
-        
-        self.spacer3 = Label(self, text='')
-        self.spacer3.grid(row=7, column=0, columnspan=4)
         
         self.g_code = Text(self,width=30,height=30,bd=3)
         self.g_code.grid(row=8, column=0, columnspan=5, sticky=E+W+N+S)
@@ -175,38 +172,51 @@ class Application(Frame):
         self.g_code.configure(yscrollcommand = self.tbscroll.set) 
 
         self.sp4 = Label(self)
-        self.sp4.grid(row=9)
+        self.sp4.grid(row=11)
         
         self.st8=Label(self,text='Units')
         self.st8.grid(row=0,column=5)
         UnitOptions=[('Inch',1),('MM',2)]
-        self.UnitVar=IntVar()
+        self.UnitVar=StringVar()
         for text, value in UnitOptions:
-            Radiobutton(self, text=text,value=value,
+            Radiobutton(self, text=text,value=text,
                 variable=self.UnitVar,indicatoron=0,width=6,)\
                 .grid(row=value, column=5)
-        self.UnitVar.set(1)
+        self.UnitVar.set('Inch')
                
         self.st9=Label(self,text='X0-Y0')
         self.st9.grid(row=3,column=5)
-        HomeOptions=[('Left-Rear',4),('Left-Front',5)]
-        self.HomeVar=IntVar()
+        HomeOptions=[('Left-Rear',4),('Left-Front',5),('Right-Rear',6),('Right-Front',7)]
+        self.HomeVar=StringVar()
         for text, value in HomeOptions:
-            Radiobutton(self, text=text,value=value,
+            Radiobutton(self, text=text,value=text,
                 variable=self.HomeVar,indicatoron=0,width=11,)\
                 .grid(row=value, column=5)
-        self.HomeVar.set(4)
+        self.HomeVar.set('Left-Rear')
                
         self.st11=Label(self,text='Mill Mode')
         self.st11.grid(row=6,column=0,sticky=E)
         MillOptions=[('Both',1),('Conventional',2),('Climb',3)]
-        self.MillVar=IntVar()
+        self.MillVar=StringVar()
         for text, value in MillOptions:
-            Radiobutton(self, text=text,value=value,
+            Radiobutton(self, text=text,value=text,
                 variable=self.MillVar,indicatoron=0,width=11,)\
                 .grid(row=6, column=value, sticky=W)
-        self.MillVar.set(1)
+        self.MillVar.set('Both')
                
+        self.st12=Label(self,text='Cut Along')
+        self.st12.grid(row=7,column=0,sticky=E)
+        AxisOptions=[('X-Axis',1),('Y-Axis',2)]
+        self.AxisVar=StringVar()
+        for text, value in AxisOptions:
+            Radiobutton(self, text=text,value=text,
+                variable=self.AxisVar,indicatoron=0,width=11,)\
+                .grid(row=7, column=value, sticky=W)
+        self.AxisVar.set('X-Axis')
+
+        self.spacer3 = Label(self, text='')
+        self.spacer3.grid(row=8, column=0, columnspan=4)      
+              
         self.GenButton = Button(self, text='Generate G-Code',command=self.GenCode)
         self.GenButton.grid(row=9, column=0)
         
@@ -246,21 +256,37 @@ class Application(Frame):
             self.LeadIn = self.FToD(self.LeadinVar.get())
         else:
             self.LeadIn = self.ToolRadius + D('0.1')
-        self.X_Start = -(self.LeadIn)
-        self.X_End = self.FToD(self.PartLengthVar.get()) + self.LeadIn
+        self.Cut_Start = -(self.LeadIn)
+        self.Cut_End = self.FToD(self.PartLengthVar.get()) + self.LeadIn
+        self.DefaultMillMode = 'Climb'
+        if ('Right' in self.HomeVar.get() and self.AxisVar.get() == 'X-Axis') or \
+           ('Rear' in self.HomeVar.get() and self.AxisVar.get() == 'Y-Axis'):
+           self.Cut_Start *= -1
+           self.Cut_End *= -1
+
+        if (['Right-Rear', 'Left-Front'].contains(self.HomeVar.get()) and self.AxisVar.get() == 'X-Axis') or \
+           (['Left-Rear', 'Right-Front'].contains(self.HomeVar.get()) and self.AxisVar.get() == 'Y-Axis'):
+           self.DefaultMillMode = 'Conventional'
+
         if len(self.StepOverVar.get())>0:
-            self.Y_StepOver = (self.FToD(self.ToolDiameterVar.get())\
-                * self.FToD(self.StepOverVar.get())/100)
+            if self.StepOverVar.get().endswith('%'):
+                self.Step_Stepover = (self.FToD(self.ToolDiameterVar.get())\
+                    * self.FToD(self.StepOverVar.get().rstrip('%'))/100)
+            else:
+                self.Step_Stepover = self.FToD(self.StepOverVar.get())
         else:
-            self.Y_StepOver = self.FToD(self.ToolDiameterVar.get())*D('.75')
-        if self.HomeVar.get()==4:
-        	self.Y_Start = (self.ToolRadius - self.Y_StepOver)
-        	self.Y_End = -(self.FToD(self.PartWidthVar.get())-\
-            		(self.ToolRadius - self.Y_StepOver))+D('.1')
+            self.Step_Stepover = self.FToD(self.ToolDiameterVar.get())*D('.5')
+        
+        self.NumOfSteps = int(ceil(self.FToD(self.PartWidthVar.get())/self.Step_Stepover))
+        self.Step_Start = self.Step_Stepover - self.ToolRadius
+        self.Step_End = self.FToD(self.PartWidthVar.get()) - self.ToolRadius
+        if ('Rear' in self.HomeVar.get() and self.AxisVar.get() == 'X-Axis') or \
+           ('Right' in self.HomeVar.get() and self.AxisVar.get() == 'Y-Axis'):
+           self.Step_Stepover *= -1
         else:
-        	self.Y_Start = -(self.ToolRadius - self.Y_StepOver)
-        	self.Y_End = (self.FToD(self.PartWidthVar.get())+\
-            		(self.ToolRadius + self.Y_StepOver))+D('.1')
+            self.Step_Start *= -1
+            self.Step_End *= -1
+        
         self.Z_Total = self.FToD(self.TotalToRemoveVar.get())
         if len(self.DepthOfCutVar.get())>0:
             self.Z_Step = self.FToD(self.DepthOfCutVar.get())
@@ -270,10 +296,16 @@ class Application(Frame):
         else:
             self.Z_Step = 0
             self.NumOfZSteps = 1
-        self.NumOfYSteps = int(ceil(self.FToD(self.PartWidthVar.get())/self.Y_StepOver))
         self.Z_Position = 0
+        if self.AxisVar.get() == 'X-Axis':
+            self.Cut_Axis = 'X'
+            self.Step_Axis = 'Y'
+        else:
+            self.Cut_Axis = 'Y'
+            self.Step_Axis = 'X'
+
         # Generate the G-Codes
-        if self.UnitVar.get()==1:
+        if self.UnitVar.get()=="Inch":
             self.g_code.insert(END, 'G20 ')
         else:
             self.g_code.insert(END, 'G21 ')
@@ -283,47 +315,45 @@ class Application(Frame):
         if len(self.FeedrateVar.get())>0:
             self.g_code.insert(END, 'F%s\n' % (self.FeedrateVar.get()))
         for i in range(self.NumOfZSteps):
-            self.g_code.insert(END, 'G0 X%.4f Y%.4f\nZ%.4f\n' \
-                %(self.X_Start, self.Y_Start,z))
+            self.g_code.insert(END, 'G0 %s%.4f %s%.4f\nZ%.4f\n' \
+                %(self.Cut_Axis, self.Cut_Start, self.Step_Axis, self.Step_Start,z))
             # Make sure the Z position does not exceed the total depth
             if self.Z_Step>0 and (self.Z_Total+self.Z_Position) >= self.Z_Step:
                 self.Z_Position = self.Z_Position - self.Z_Step
             else:
                 self.Z_Position = -self.Z_Total
             self.g_code.insert(END, 'G1 Z%.4f\n' % (self.Z_Position))
-            self.X_Position = self.X_Start
-            self.Y_Position = self.Y_Start
+            self.Cut_Position = self.Cut_Start
+            self.Step_Position = self.Step_Start
 
-            for i in range(self.NumOfYSteps):
+            for i in range(self.NumOfSteps):
                 # Insert rapids of we care about direction
-                if self.MillVar.get() == 2 and self.X_Position == self.X_Start: # conventional
-                    self.g_code.insert(END, 'G0 Z%.4f\n' % z)
-                    self.g_code.insert(END, 'G0 X%.4f\n' % self.X_End)
-                    self.g_code.insert(END, 'G1 Z%.4f\n' % self.Z_Position)
-                    self.X_Position = self.X_End
-                    
-                if self.MillVar.get() == 3 and self.X_Position == self.X_End: # climb
-                    self.g_code.insert(END, 'G0 Z%.4f\n' % z)
-                    self.g_code.insert(END, 'G0 X%.4f\n' % self.X_Start)
-                    self.g_code.insert(END, 'G1 Z%.4f\n' % self.Z_Position)
-                    self.X_Position = self.X_Start
+                if self.MillVar.get() != 'Both':
+                    if self.MillVar.get() != self.DefaultMillMode and self.Cut_Position == self.Cut_Start:
+                        self.g_code.insert(END, 'G0 Z%.4f\n' % z)
+                        self.g_code.insert(END, 'G0 %s%.4f\n' % (self.Cut_Axis, self.Cut_End))
+                        self.g_code.insert(END, 'G1 Z%.4f\n' % self.Z_Position)
+                        self.Cut_Position = self.Cut_End                        
+                    elif self.MillVar.get() == self.DefaultMillMode and self.Cut_Position == self.Cut_End:
+                        self.g_code.insert(END, 'G0 Z%.4f\n' % z)
+                        self.g_code.insert(END, 'G0 %s%.4f\n' % (self.Cut_Axis, self.Cut_Start))
+                        self.g_code.insert(END, 'G1 Z%.4f\n' % self.Z_Position)
+                        self.Cut_Position = self.Cut_Start
 
-                if self.X_Position == self.X_Start: 
-                    self.g_code.insert(END, 'G1 X%.4f\n' % (self.X_End))
-                    self.X_Position = self.X_End
+                if self.Cut_Position == self.Cut_Start: 
+                    self.g_code.insert(END, 'G1 %s%.4f\n' % (self.Cut_Axis, self.Cut_End))
+                    self.Cut_Position = self.Cut_End
                 else:
-                    self.g_code.insert(END, 'G1 X%.4f\n' % (self.X_Start))
-                    self.X_Position = self.X_Start
-                if self.HomeVar.get()==4:
-                    self.Y_Position = self.Y_Position - self.Y_StepOver
-                else:
-                    self.Y_Position = self.Y_Position + self.Y_StepOver
-                if self.HomeVar.get()==4:
-                    if self.Y_Position > self.Y_End:
-                        self.g_code.insert(END, 'G0 Y%.4f\n' % (self.Y_Position))
-                else:
-                    if self.Y_Position < self.Y_End:
-                        self.g_code.insert(END, 'G0 Y%.4f\n' % (self.Y_Position))
+                    self.g_code.insert(END, 'G1 %s%.4f\n' % (self.Cut_Axis, self.Cut_Start))
+                    self.Cut_Position = self.Cut_Start
+
+                self.Step_Position += self.Step_Stepover
+
+                if abs(self.Step_Position) > abs(self.Step_End):
+                    self.Step_Position = self.Step_End
+
+                self.g_code.insert(END, 'G0 %s%.4f\n' % (self.Step_Axis, self.Step_Position))
+ 
         self.g_code.insert(END, 'G0 Z%.4f\n'% z)
         if len(self.SpindleRPMVar.get())>0:
             self.g_code.insert(END, 'M5\n')
@@ -386,11 +416,12 @@ class Application(Frame):
         self.DepthOfCutVar.set(self.GetIniData('face.ini','MillingPara','DepthOfCut','3'))
         self.ToolDiameterVar.set(self.GetIniData('face.ini','MillingPara','ToolDiameter','10'))
         self.SpindleRPMVar.set(self.GetIniData('face.ini','MillingPara','SpindleRPM','9000'))
-        self.StepOverVar.set(self.GetIniData('face.ini','MillingPara','StepOver','50'))
+        self.StepOverVar.set(self.GetIniData('face.ini','MillingPara','StepOver','50%%'))
         self.LeadinVar.set(self.GetIniData('face.ini','MillingPara','Leadin'))
-        self.UnitVar.set(int(self.GetIniData('face.ini','MillingPara','UnitVar','2')))
-        self.HomeVar.set(int(self.GetIniData('face.ini','MillingPara','HomeVar','4')))
-        self.MillVar.set(int(self.GetIniData('face.ini','MillingPara','MillVar','1')))
+        self.UnitVar.set(self.GetIniData('face.ini','MillingPara','UnitVar','Inch'))
+        self.HomeVar.set(self.GetIniData('face.ini','MillingPara','HomeVar','Left-Rear'))
+        self.MillVar.set(self.GetIniData('face.ini','MillingPara','MillVar','Both'))
+        self.AxisVar.set(self.GetIniData('face.ini','MillingPara','AxisVar','X-Axis'))
         self.SafeZVar.set(self.GetIniData('face.ini','MillingPara','SafeZ','10.0'))
         self.PartLengthVar.set(self.GetIniData('face.ini','Part','X'))
         self.PartWidthVar.set(self.GetIniData('face.ini','Part','Y'))
@@ -405,11 +436,12 @@ class Application(Frame):
         set_pref('MillingPara','DepthOfCut',self.DepthOfCutVar.get())
         set_pref('MillingPara','ToolDiameter',self.ToolDiameterVar.get())
         set_pref('MillingPara','SpindleRPM',self.SpindleRPMVar.get())
-        set_pref('MillingPara','StepOver',self.StepOverVar.get())
+        set_pref('MillingPara','StepOver',self.StepOverVar.get().replace('%','%%'))
         set_pref('MillingPara','Leadin',self.LeadinVar.get())
         set_pref('MillingPara','UnitVar',str(self.UnitVar.get()))
         set_pref('MillingPara','HomeVar',str(self.HomeVar.get()))
         set_pref('MillingPara','MillVar',str(self.MillVar.get()))
+        set_pref('MillingPara','AxisVar',str(self.AxisVar.get()))
         set_pref('MillingPara','SafeZ',self.SafeZVar.get())
         set_pref('Part','X',self.PartLengthVar.get())
         set_pref('Part','Y',self.PartWidthVar.get())
