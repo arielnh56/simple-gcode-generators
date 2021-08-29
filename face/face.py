@@ -166,16 +166,16 @@ class Application(Frame):
         self.Leadin.grid(row=5, column=3, sticky=W)
         
         self.spacer3 = Label(self, text='')
-        self.spacer3.grid(row=6, column=0, columnspan=4)
+        self.spacer3.grid(row=7, column=0, columnspan=4)
         
         self.g_code = Text(self,width=30,height=30,bd=3)
-        self.g_code.grid(row=7, column=0, columnspan=5, sticky=E+W+N+S)
+        self.g_code.grid(row=8, column=0, columnspan=5, sticky=E+W+N+S)
         self.tbscroll = Scrollbar(self,command = self.g_code.yview)
-        self.tbscroll.grid(row=7, column=5, sticky=N+S+W)
+        self.tbscroll.grid(row=8, column=5, sticky=N+S+W)
         self.g_code.configure(yscrollcommand = self.tbscroll.set) 
 
         self.sp4 = Label(self)
-        self.sp4.grid(row=8)
+        self.sp4.grid(row=9)
         
         self.st8=Label(self,text='Units')
         self.st8.grid(row=0,column=5)
@@ -197,25 +197,35 @@ class Application(Frame):
                 .grid(row=value, column=5)
         self.HomeVar.set(4)
                
+        self.st11=Label(self,text='Mill Mode')
+        self.st11.grid(row=6,column=0,sticky=E)
+        MillOptions=[('Both',1),('Conventional',2),('Climb',3)]
+        self.MillVar=IntVar()
+        for text, value in MillOptions:
+            Radiobutton(self, text=text,value=value,
+                variable=self.MillVar,indicatoron=0,width=11,)\
+                .grid(row=6, column=value, sticky=W)
+        self.MillVar.set(1)
+               
         self.GenButton = Button(self, text='Generate G-Code',command=self.GenCode)
-        self.GenButton.grid(row=8, column=0)
+        self.GenButton.grid(row=9, column=0)
         
         self.CopyButton = Button(self, text='Select All & Copy',command=self.SelectCopy)
-        self.CopyButton.grid(row=8, column=1)
+        self.CopyButton.grid(row=9, column=1)
         
         self.WriteButton = Button(self, text='Write to File',command=self.WriteToFile)
-        self.WriteButton.grid(row=8, column=2)
+        self.WriteButton.grid(row=9, column=2)
 
         if IN_AXIS:
             self.toAxis = Button(self, text='Write to AXIS and Quit',\
                 command=self.WriteToAxis)
-            self.toAxis.grid(row=8, column=3)
+            self.toAxis.grid(row=9, column=3)
         
             self.quitButton = Button(self, text='Quit', command=self.QuitFromAxis)
-            self.quitButton.grid(row=8, column=5, sticky=E)
+            self.quitButton.grid(row=9, column=5, sticky=E)
         else:
             self.quitButton = Button(self, text='Quit', command=self.quit)
-            self.quitButton.grid(row=8, column=5, sticky=E)    
+            self.quitButton.grid(row=9, column=5, sticky=E)    
 
     def QuitFromAxis(self):
         sys.stdout.write("M2 (Face.py Aborted)")
@@ -285,6 +295,19 @@ class Application(Frame):
             self.Y_Position = self.Y_Start
 
             for i in range(self.NumOfYSteps):
+                # Insert rapids of we care about direction
+                if self.MillVar.get() == 2 and self.X_Position == self.X_Start: # conventional
+                    self.g_code.insert(END, 'G0 Z%.4f\n' % z)
+                    self.g_code.insert(END, 'G0 X%.4f\n' % self.X_End)
+                    self.g_code.insert(END, 'G1 Z%.4f\n' % self.Z_Position)
+                    self.X_Position = self.X_End
+                    
+                if self.MillVar.get() == 3 and self.X_Position == self.X_End: # climb
+                    self.g_code.insert(END, 'G0 Z%.4f\n' % z)
+                    self.g_code.insert(END, 'G0 X%.4f\n' % self.X_Start)
+                    self.g_code.insert(END, 'G1 Z%.4f\n' % self.Z_Position)
+                    self.X_Position = self.X_Start
+
                 if self.X_Position == self.X_Start: 
                     self.g_code.insert(END, 'G1 X%.4f\n' % (self.X_End))
                     self.X_Position = self.X_End
@@ -335,35 +358,12 @@ class Application(Frame):
         """
         self.cp=ConfigParser()
         try:
-            self.cp.readfp(open(FileName,'r'))
-            try:
-                self.cp.has_section(SectionName)
-                try:
-                    IniData=self.cp.get(SectionName,OptionName)
-                except:
-                    IniData=default
-            except:
-                IniData=default
+            self.cp.read(FileName)
+            IniData=self.cp[SectionName][OptionName]
         except:
             IniData=default
         return IniData
         
-    def WriteIniData(self,FileName,SectionName,OptionName,OptionData):
-        """
-        Pass the file name, section name, option name and option data
-        When complete returns 'sucess'
-        """
-        self.cp=configparser()
-        try:
-            self.fn=open(FileName,'a')
-        except IOError:
-            self.fn=open(FileName,'w')
-        if not self.cp.has_section(SectionName):
-            self.cp.add_section(SectionName)
-        self.cp.set(SectionName,OptionName,OptionData)
-        self.cp.write(self.fn)
-        self.fn.close()
-
     def GetDirectory(self):
         self.DirName = askdirectory(initialdir='/home',title='Please select a directory')
         if len(self.DirName) > 0:
@@ -390,19 +390,16 @@ class Application(Frame):
         self.LeadinVar.set(self.GetIniData('face.ini','MillingPara','Leadin'))
         self.UnitVar.set(int(self.GetIniData('face.ini','MillingPara','UnitVar','2')))
         self.HomeVar.set(int(self.GetIniData('face.ini','MillingPara','HomeVar','4')))
+        self.MillVar.set(int(self.GetIniData('face.ini','MillingPara','MillVar','1')))
         self.SafeZVar.set(self.GetIniData('face.ini','MillingPara','SafeZ','10.0'))
         self.PartLengthVar.set(self.GetIniData('face.ini','Part','X'))
         self.PartWidthVar.set(self.GetIniData('face.ini','Part','Y'))
         self.TotalToRemoveVar.set(self.GetIniData('face.ini','Part','TotalToRemove'))
 
-
     def SavePrefs(self):
         def set_pref(SectionName,OptionName,OptionData):
-            if not self.cp.has_section(SectionName):
-                self.cp.add_section(SectionName)
-            self.cp.set(SectionName,OptionName,OptionData)
-        self.cp=configparser()
-        self.fn=open('face.ini','w')
+            self.cp[SectionName][OptionName] = OptionData
+
         set_pref('Directories','NcFiles',self.NcDir)
         set_pref('MillingPara','Feedrate',self.FeedrateVar.get())
         set_pref('MillingPara','DepthOfCut',self.DepthOfCutVar.get())
@@ -410,15 +407,15 @@ class Application(Frame):
         set_pref('MillingPara','SpindleRPM',self.SpindleRPMVar.get())
         set_pref('MillingPara','StepOver',self.StepOverVar.get())
         set_pref('MillingPara','Leadin',self.LeadinVar.get())
-        set_pref('MillingPara','UnitVar',self.UnitVar.get())
-        set_pref('MillingPara','HomeVar',self.HomeVar.get())
+        set_pref('MillingPara','UnitVar',str(self.UnitVar.get()))
+        set_pref('MillingPara','HomeVar',str(self.HomeVar.get()))
+        set_pref('MillingPara','MillVar',str(self.MillVar.get()))
         set_pref('MillingPara','SafeZ',self.SafeZVar.get())
         set_pref('Part','X',self.PartLengthVar.get())
         set_pref('Part','Y',self.PartWidthVar.get())
         set_pref('Part','TotalToRemove',self.TotalToRemoveVar.get())
-        self.cp.write(self.fn)
-        self.fn.close()
-	
+        self.cp.write(open('face.ini', 'w'))
+ 	
     def Simple(self):
         tkinter.messagebox.showinfo('Feature', 'Sorry this Feature has\nnot been programmed yet.')
 
