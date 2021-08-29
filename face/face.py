@@ -48,15 +48,15 @@ version = '1.5.0'
 	NC File directory and can be saved with save preferences.
 	Added safe z hight.
 """
-from tkinter import *
-from tkinter.filedialog import *
-from math import *
-from tkinter.simpledialog import *
+import os
+import sys
+import tkinter.messagebox
 from configparser import *
 from decimal import *
-import tkinter.messagebox
-
-import os
+from math import *
+from tkinter import *
+from tkinter.filedialog import *
+from tkinter.simpledialog import *
 
 IN_AXIS = 'AXIS_PROGRESS_BAR' in os.environ
 
@@ -99,143 +99,206 @@ class Application(Frame):
         self.HelpMenu.add_command(label='About', command=self.HelpAbout)
 
     def createWidgets(self):
-        
-        self.sp1 = Label(self)
-        self.sp1.grid(row=0)
-        
+        row = 0
+        column=0
+ 
+        self.spacer1 = Label(self, text='')
+        self.spacer1.grid(row=row, column=column)      
+        column += 1
+              
         self.st1 = Label(self, text='Part Length X * ')
-        self.st1.grid(row=1, column=0, sticky=E)
+        self.st1.grid(row=row, column=column, sticky=E)
         self.PartLengthVar = StringVar()
         self.PartLength = Entry(self, width=10, textvariable=self.PartLengthVar)
-        self.PartLength.grid(row=1, column=1, sticky=W)
+        self.PartLength.grid(row=row, column=column+1, sticky=W)
         self.PartLength.focus_set()
+        column += 2
 
+        self.spacer2 = Label(self, text='')
+        self.spacer2.grid(row=row, column=column)      
+        column += 1
+              
+        self.g_code = Text(self,width=30,height=30,bd=3)
+        self.g_code.grid(row=row, column=column, sticky=E+W+N+S)
+        self.tbscroll = Scrollbar(self,command = self.g_code.yview)
+        self.tbscroll.grid(row=row, column=column+1, sticky=N+S+W)
+        self.g_code.configure(yscrollcommand = self.tbscroll.set) 
+        column += 2
+
+        row += 1
+        column=1
         self.st2 = Label(self, text='Part Width Y * ')
-        self.st2.grid(row=2, column=0, sticky=E)
+        self.st2.grid(row=row, column=column, sticky=E)
         self.PartWidthVar = StringVar()
         self.PartWidth = Entry(self, width=10, textvariable=self.PartWidthVar)
-        self.PartWidth.grid(row=2, column=1, sticky=W)
+        self.PartWidth.grid(row=row, column=column+1, sticky=W)
+        column += 2
 
-        self.st6 = Label(self, text='Depth of Each Cut ')
-        self.st6.grid(row=3, column=0, sticky=E)
-        self.DepthOfCutVar = StringVar()
-        self.DepthOfCut = Entry(self, width=10, textvariable=self.DepthOfCutVar)
-        self.DepthOfCut.grid(row=3, column=1, sticky=W)
-
-        self.st5 = Label(self, text='Total Z Depth ')
-        self.st5.grid(row=4, column=0, sticky=E)
-        self.TotalToRemoveVar = StringVar()
-        self.TotalToRemove = Entry(self, width=10, textvariable=self.TotalToRemoveVar)
-        self.TotalToRemove.grid(row=4, column=1, sticky=W)
-
-        
+        row += 1
+        column=1
         self.st3 = Label(self, text='Tool Diameter ')
-        self.st3.grid(row=1, column=2, sticky=E)
+        self.st3.grid(row=row, column=column, sticky=E)
         self.ToolDiameterVar = StringVar()
         self.ToolDiameter = Entry(self, width=10, textvariable=self.ToolDiameterVar)
-        self.ToolDiameter.grid(row=1, column=3, sticky=W)
+        self.ToolDiameter.grid(row=row, column=column+1, sticky=W)
+        column += 2
         
-        self.st4 = Label(self, text='Feedrate ')
-        self.st4.grid(row=2, column=2, sticky=E)
+        row += 1
+        column=1
+        self.st4 = Label(self, text='Feedrate ')    
+        self.st4.grid(row=row, column=column, sticky=E)
         self.FeedrateVar = StringVar()
         self.Feedrate = Entry(self, width=10, textvariable=self.FeedrateVar)
-        self.Feedrate.grid(row=2, column=3, sticky=W)
+        self.Feedrate.grid(row=row, column=column+1, sticky=W)
+        column += 2
 
+        row += 1
+        column=1
+        self.st6 = Label(self, text='Depth of Each Cut ')
+        self.st6.grid(row=row, column=column, sticky=E)
+        self.DepthOfCutVar = StringVar()
+        self.DepthOfCut = Entry(self, width=10, textvariable=self.DepthOfCutVar)
+        self.DepthOfCut.grid(row=row, column=column+1, sticky=W)
+        column += 2
+
+        row += 1
+        column=1
         self.st4a = Label(self, text='M3 Spindle RPM ')
-        self.st4a.grid(row=3, column=2, sticky=E)
+        self.st4a.grid(row=row, column=column, sticky=E)
         self.SpindleRPMVar = StringVar()
         self.SpindleRPM = Entry(self, width=10, textvariable=self.SpindleRPMVar)
-        self.SpindleRPM.grid(row=3, column=3, sticky=W)
+        self.SpindleRPM.grid(row=row, column=column+1, sticky=W)
+        column += 2
 
+        row += 1
+        column=1
+        self.st5 = Label(self, text='Total Z Depth ')
+        self.st5.grid(row=row, column=column, sticky=E)
+        self.TotalToRemoveVar = StringVar()
+        self.TotalToRemove = Entry(self, width=10, textvariable=self.TotalToRemoveVar)
+        self.TotalToRemove.grid(row=row, column=column+1, sticky=W)
+        column += 2
+
+        row += 1
+        column=1
         self.st7 = Label(self, text='Stepover (Value or %) ')
-        self.st7.grid(row=4, column=2, sticky=E)
+        self.st7.grid(row=row, column=column, sticky=E)
         self.StepOverVar = StringVar()
         self.StepOver = Entry(self, width=10, textvariable=self.StepOverVar)
-        self.StepOver.grid(row=4, column=3, sticky=W)
+        self.StepOver.grid(row=row, column=column+1, sticky=W)
+        column += 2
         
+        row += 1
+        column=1
         self.st10 = Label(self, text='Safe Z height ')
-        self.st10.grid(row=5, column=0, sticky=E)
+        self.st10.grid(row=row, column=column, sticky=E)
         self.SafeZVar = StringVar()
         self.Leadin = Entry(self, width=10, textvariable=self.SafeZVar)
-        self.Leadin.grid(row=5, column=1, sticky=W)
+        self.Leadin.grid(row=row, column=column+1, sticky=W)
+        column += 2
         
+        row += 1
+        column=1
         self.st8 = Label(self, text='Lead In / Lead Out ')
-        self.st8.grid(row=5, column=2, sticky=E)
+        self.st8.grid(row=row, column=column, sticky=E)
         self.LeadinVar = StringVar()
         self.Leadin = Entry(self, width=10, textvariable=self.LeadinVar)
-        self.Leadin.grid(row=5, column=3, sticky=W)
+        self.Leadin.grid(row=row, column=column+1, sticky=W)
+        column += 2
         
-        self.g_code = Text(self,width=30,height=30,bd=3)
-        self.g_code.grid(row=8, column=0, columnspan=5, sticky=E+W+N+S)
-        self.tbscroll = Scrollbar(self,command = self.g_code.yview)
-        self.tbscroll.grid(row=8, column=5, sticky=N+S+W)
-        self.g_code.configure(yscrollcommand = self.tbscroll.set) 
-
-        self.sp4 = Label(self)
-        self.sp4.grid(row=11)
-        
+        row += 1
+        column=1
         self.st8=Label(self,text='Units')
-        self.st8.grid(row=0,column=5)
+        self.st8.grid(row=row,column=column)
         UnitOptions=[('Inch',1),('MM',2)]
         self.UnitVar=StringVar()
-        for text, value in UnitOptions:
+        for text, y in UnitOptions:
             Radiobutton(self, text=text,value=text,
                 variable=self.UnitVar,indicatoron=0,width=6,)\
-                .grid(row=value, column=5)
+                .grid(row=row+y, column=column)
         self.UnitVar.set('Inch')
-               
-        self.st9=Label(self,text='X0-Y0')
-        self.st9.grid(row=3,column=5)
-        HomeOptions=[('Left-Rear',4),('Left-Front',5),('Right-Rear',6),('Right-Front',7)]
-        self.HomeVar=StringVar()
-        for text, value in HomeOptions:
-            Radiobutton(self, text=text,value=text,
-                variable=self.HomeVar,indicatoron=0,width=11,)\
-                .grid(row=value, column=5)
-        self.HomeVar.set('Left-Rear')
-               
-        self.st11=Label(self,text='Mill Mode')
-        self.st11.grid(row=6,column=0,sticky=E)
-        MillOptions=[('Both',1),('Conventional',2),('Climb',3)]
-        self.MillVar=StringVar()
-        for text, value in MillOptions:
-            Radiobutton(self, text=text,value=text,
-                variable=self.MillVar,indicatoron=0,width=11,)\
-                .grid(row=6, column=value, sticky=W)
-        self.MillVar.set('Both')
-               
+        column += 1
+           
         self.st12=Label(self,text='Cut Along')
-        self.st12.grid(row=7,column=0,sticky=E)
+        self.st12.grid(row=row,column=column)
         AxisOptions=[('X-Axis',1),('Y-Axis',2)]
         self.AxisVar=StringVar()
-        for text, value in AxisOptions:
+        for text, x in AxisOptions:
             Radiobutton(self, text=text,value=text,
                 variable=self.AxisVar,indicatoron=0,width=11,)\
-                .grid(row=7, column=value, sticky=W)
+                .grid(row=row+x, column=column)
         self.AxisVar.set('X-Axis')
+        column += 1
 
-        self.spacer3 = Label(self, text='')
-        self.spacer3.grid(row=8, column=0, columnspan=4)      
+        row += 3
+        column=1
+        self.st9=Label(self,text='Start At X0-Y0')
+        self.st9.grid(row=row,column=column,columnspan=2)
+        HomeOptions=[('Left-Rear',0,1,E+S),('Left-Front',0,2,E+N),('Right-Rear',1,1,W+S),('Right-Front',1,2,W+N)]
+        self.HomeVar=StringVar()
+        for text, x, y, sticky in HomeOptions:
+            Radiobutton(self, text=text,value=text,
+                variable=self.HomeVar,indicatoron=0,width=11,)\
+                .grid(row=row+y, column=column+x, sticky=sticky)
+        self.HomeVar.set('Left-Rear')
+        column += 1
+               
+        row += 3
+        column=1
+        self.st11=Label(self,text='Mill Mode')
+        self.st11.grid(row=row,column=column,columnspan=2)
+        MillOptions=[('Both',0,1,2,E+W+S),('Conventional',0,2,1,E+W+N),('Climb',1,2,1,E+W+N)]
+        self.MillVar=StringVar()
+        for text, x, y, span, sticky in MillOptions:
+            Radiobutton(self, text=text,value=text,
+                variable=self.MillVar,indicatoron=0,width=11,)\
+                .grid(row=row+y, column=column+x, columnspan=span, sticky=sticky)
+        self.MillVar.set('Both')
+        column += 4
               
+        row += 3
+        column=1
+        self.sp4 = Label(self)
+        self.sp4.grid(row=row)
+        
+        row += 1
+        column=1
         self.GenButton = Button(self, text='Generate G-Code',command=self.GenCode)
-        self.GenButton.grid(row=9, column=0)
+        self.GenButton.grid(row=row, column=column)
+        column += 1
         
         self.CopyButton = Button(self, text='Select All & Copy',command=self.SelectCopy)
-        self.CopyButton.grid(row=9, column=1)
+        self.CopyButton.grid(row=row, column=column)
+        column += 1
         
+        row += 1
+        column=1
         self.WriteButton = Button(self, text='Write to File',command=self.WriteToFile)
-        self.WriteButton.grid(row=9, column=2)
+        self.WriteButton.grid(row=row, column=column)
+        column += 1
 
+        self.ClearButton = Button(self, text='Clear',command=self.ClearCode)
+        self.ClearButton.grid(row=row, column=column)
+        column += 1
+
+        row += 1
+        column=1
         if IN_AXIS:
             self.toAxis = Button(self, text='Write to AXIS and Quit',\
                 command=self.WriteToAxis)
-            self.toAxis.grid(row=9, column=3)
+            self.toAxis.grid(row=row, column=column)
+            column += 1
         
             self.quitButton = Button(self, text='Quit', command=self.QuitFromAxis)
-            self.quitButton.grid(row=9, column=5, sticky=E)
+            self.quitButton.grid(row=row, column=column, sticky=E)
+            column += 1
         else:
+
             self.quitButton = Button(self, text='Quit', command=self.quit)
-            self.quitButton.grid(row=9, column=5, sticky=E)    
+            self.quitButton.grid(row=row, column=column, sticky=E)    
+            column += 1
+        self.g_code.grid(rowspan = row - self.g_code.grid_info()['row'] + 1)
+        self.tbscroll.grid(rowspan = self.g_code.grid_info()['rowspan'])
 
     def QuitFromAxis(self):
         sys.stdout.write("M2 (Face.py Aborted)")
@@ -264,8 +327,8 @@ class Application(Frame):
            self.Cut_Start *= -1
            self.Cut_End *= -1
 
-        if (['Right-Rear', 'Left-Front'].contains(self.HomeVar.get()) and self.AxisVar.get() == 'X-Axis') or \
-           (['Left-Rear', 'Right-Front'].contains(self.HomeVar.get()) and self.AxisVar.get() == 'Y-Axis'):
+        if (self.HomeVar.get() in ['Right-Rear', 'Left-Front'] and self.AxisVar.get() == 'X-Axis') or \
+           (self.HomeVar.get() in ['Left-Rear', 'Right-Front'] and self.AxisVar.get() == 'Y-Axis'):
            self.DefaultMillMode = 'Conventional'
 
         if len(self.StepOverVar.get())>0:
@@ -358,6 +421,12 @@ class Application(Frame):
         if len(self.SpindleRPMVar.get())>0:
             self.g_code.insert(END, 'M5\n')
         self.g_code.insert(END, 'G0 X0.0000 Y0.0000\nM2 (End of File)\n')
+
+    def ClearCode(self):
+        """
+        Clears the g_code box
+        """
+        self.g_code.delete(1.0, END)
 
     def FToD(self,s): # Float To Decimal
         """
