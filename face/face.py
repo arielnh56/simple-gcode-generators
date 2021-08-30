@@ -345,8 +345,7 @@ class Application(Frame):
         self.Step_End = self.FToD(self.PartWidthVar.get()) - self.ToolRadius
         if ('Rear' in self.HomeVar.get() and self.AxisVar.get() == 'X-Axis') or \
            ('Right' in self.HomeVar.get() and self.AxisVar.get() == 'Y-Axis'):
-           self.Step_Stepover *= -1
-        else:
+            self.Step_Stepover *= -1
             self.Step_Start *= -1
             self.Step_End *= -1
         
@@ -389,7 +388,7 @@ class Application(Frame):
             self.Cut_Position = self.Cut_Start
             self.Step_Position = self.Step_Start
 
-            for i in range(self.NumOfSteps):
+            for j in range(self.NumOfSteps):
                 # Insert rapids of we care about direction
                 if self.MillVar.get() != 'Both':
                     if self.MillVar.get() != self.DefaultMillMode and self.Cut_Position == self.Cut_Start:
@@ -412,8 +411,15 @@ class Application(Frame):
 
                 self.Step_Position += self.Step_Stepover
 
-                if abs(self.Step_Position) > abs(self.Step_End):
+                print("Step_Position = %f , Step_End = %f" % (self.Step_Position, self.Step_End))
+                if ('Rear' in self.HomeVar.get() and self.AxisVar.get() == 'X-Axis') or \
+                   ('Right' in self.HomeVar.get() and self.AxisVar.get() == 'Y-Axis'):
+                    if self.Step_Position < self.Step_End:
+                        print("hello 1")
+                        self.Step_Position = self.Step_End
+                elif self.Step_Position > self.Step_End:
                     self.Step_Position = self.Step_End
+                    print("hello 2")
 
                 self.g_code.insert(END, 'G0 %s%.4f\n' % (self.Step_Axis, self.Step_Position))
  
