@@ -324,9 +324,13 @@ class Application(Frame):
         self.DefaultMillMode = 'Climb'
         if ('Right' in self.HomeVar.get() and self.AxisVar.get() == 'X-Axis') or \
            ('Rear' in self.HomeVar.get() and self.AxisVar.get() == 'Y-Axis'):
-           self.Cut_Start *= -1
-           self.Cut_End *= -1
-
+           self.Cut_Dir = -1
+        else:
+           self.Cut_Dir = 1
+        # real position, for use in Gcode
+        self.Cut_Start_R = self.Cut_Start * self.Cut_Dir 
+        self.Cut_End_R = self.Cut_End * self.Cut_Dir 
+ 
         if (self.HomeVar.get() in ['Right-Rear', 'Left-Front'] and self.AxisVar.get() == 'X-Axis') or \
            (self.HomeVar.get() in ['Left-Rear', 'Right-Front'] and self.AxisVar.get() == 'Y-Axis'):
            self.DefaultMillMode = 'Conventional'
@@ -345,9 +349,12 @@ class Application(Frame):
         self.Step_End = self.FToD(self.PartWidthVar.get()) - self.ToolRadius
         if ('Rear' in self.HomeVar.get() and self.AxisVar.get() == 'X-Axis') or \
            ('Right' in self.HomeVar.get() and self.AxisVar.get() == 'Y-Axis'):
-            self.Step_Stepover *= -1
-            self.Step_Start *= -1
-            self.Step_End *= -1
+            self.Step_Dir = -1
+        else:
+           self.Step_Dir = 1
+        # real position, for use in Gcode
+        self.Step_Start_R = self.Step_Start * self.Step_Dir 
+        self.Step_End_R = self.Step_End * self.Step_Dir 
         
         self.Z_Total = self.FToD(self.TotalToRemoveVar.get())
         if len(self.DepthOfCutVar.get())>0:
@@ -378,7 +385,7 @@ class Application(Frame):
             self.g_code.insert(END, 'F%s\n' % (self.FeedrateVar.get()))
         for i in range(self.NumOfZSteps):
             self.g_code.insert(END, 'G0 %s%.4f %s%.4f\nZ%.4f\n' \
-                %(self.Cut_Axis, self.Cut_Start, self.Step_Axis, self.Step_Start,z))
+                %(self.Cut_Axis, self.Cut_Start_R, self.Step_Axis, self.Step_Start_R,z))
             # Make sure the Z position does not exceed the total depth
             if self.Z_Step>0 and (self.Z_Total+self.Z_Position) >= self.Z_Step:
                 self.Z_Position = self.Z_Position - self.Z_Step
@@ -393,35 +400,28 @@ class Application(Frame):
                 if self.MillVar.get() != 'Both':
                     if self.MillVar.get() != self.DefaultMillMode and self.Cut_Position == self.Cut_Start:
                         self.g_code.insert(END, 'G0 Z%.4f\n' % z)
-                        self.g_code.insert(END, 'G0 %s%.4f\n' % (self.Cut_Axis, self.Cut_End))
+                        self.g_code.insert(END, 'G0 %s%.4f\n' % (self.Cut_Axis, self.Cut_End_R))
                         self.g_code.insert(END, 'G1 Z%.4f\n' % self.Z_Position)
                         self.Cut_Position = self.Cut_End                        
                     elif self.MillVar.get() == self.DefaultMillMode and self.Cut_Position == self.Cut_End:
                         self.g_code.insert(END, 'G0 Z%.4f\n' % z)
-                        self.g_code.insert(END, 'G0 %s%.4f\n' % (self.Cut_Axis, self.Cut_Start))
+                        self.g_code.insert(END, 'G0 %s%.4f\n' % (self.Cut_Axis, self.Cut_Start_R))
                         self.g_code.insert(END, 'G1 Z%.4f\n' % self.Z_Position)
                         self.Cut_Position = self.Cut_Start
 
                 if self.Cut_Position == self.Cut_Start: 
-                    self.g_code.insert(END, 'G1 %s%.4f\n' % (self.Cut_Axis, self.Cut_End))
+                    self.g_code.insert(END, 'G1 %s%.4f\n' % (self.Cut_Axis, self.Cut_End_R))
                     self.Cut_Position = self.Cut_End
                 else:
-                    self.g_code.insert(END, 'G1 %s%.4f\n' % (self.Cut_Axis, self.Cut_Start))
+                    self.g_code.insert(END, 'G1 %s%.4f\n' % (self.Cut_Axis, self.Cut_Start_R))
                     self.Cut_Position = self.Cut_Start
 
                 self.Step_Position += self.Step_Stepover
 
-                print("Step_Position = %f , Step_End = %f" % (self.Step_Position, self.Step_End))
-                if ('Rear' in self.HomeVar.get() and self.AxisVar.get() == 'X-Axis') or \
-                   ('Right' in self.HomeVar.get() and self.AxisVar.get() == 'Y-Axis'):
-                    if self.Step_Position < self.Step_End:
-                        print("hello 1")
-                        self.Step_Position = self.Step_End
-                elif self.Step_Position > self.Step_End:
+                if self.Step_Position > self.Step_End:
                     self.Step_Position = self.Step_End
-                    print("hello 2")
 
-                self.g_code.insert(END, 'G0 %s%.4f\n' % (self.Step_Axis, self.Step_Position))
+                self.g_code.insert(END, 'G0 %s%.4f\n' % (self.Step_Axis, self.Step_Position * self.Step_Dir))
  
         self.g_code.insert(END, 'G0 Z%.4f\n'% z)
         if len(self.SpindleRPMVar.get())>0:
